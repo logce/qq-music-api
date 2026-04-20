@@ -39,28 +39,38 @@ Fork 此仓库到你的 GitHub 账户。
 4. Value: 粘贴你的凭证 JSON
 5. 点击 **Save and Deploy**
 
+### 6. 设置访问密码（建议）
+
+1. 进入 **Settings** > **Variables and Secrets** > **Add**
+2. Type: **Secret**
+3. Name: `password`（也兼容 `PASSWORD`）
+4. Value: 设置一个你的访问密码
+5. 点击 **Save and Deploy**
+
 > 凭证可用 [tooplick/qq-music-download](https://github.com/tooplick/qq-music-download) 登录获取
 
-### 6. 初始化
+### 7. 初始化
 
-访问 `https://你的域名/admin` 初始化数据库。
+访问 `https://你的域名/admin?password=你设置的密码` 初始化数据库。
 
 ---
 
 ## 📖 API 端点
 
+设置 `password` 环境变量后，除首页外，所有请求都需要在 query 中带上 `password` 参数。
+
 | 端点 | 说明 |
 |------|------|
-| `/api/search?keyword=xxx` | 搜索歌曲/歌手/专辑/歌单 |
-| `/api/song/url?mid=xxx&quality=flac` | 获取歌曲播放链接 (quality: master/atmos/atmos_51/flac/320/128，默认 flac，自动降级) |
-| `/api/song/detail?mid=xxx` | 获取歌曲详情 |
-| `/api/song/cover?mid=xxx` | 获取歌曲封面 |
-| `/api/lyric?mid=xxx&qrc=1&trans=1` | 获取歌词 (支持参数: qrc(逐字), trans(翻译), roma(罗马音)) |
-| `/api/album?mid=xxx` | 获取专辑详情 |
-| `/api/playlist?id=xxx` | 获取歌单详情 |
-| `/api/singer?mid=xxx` | 获取歌手信息 |
-| `/api/top` | 获取排行榜 |
-| `/admin` | 数据库初始化 |
+| `/api/search?keyword=xxx&password=你的密码` | 搜索歌曲/歌手/专辑/歌单 |
+| `/api/song/url?mid=xxx&quality=flac&password=你的密码` | 获取歌曲播放链接 (quality: master/atmos/atmos_51/flac/320/128，默认 flac，自动降级) |
+| `/api/song/detail?mid=xxx&password=你的密码` | 获取歌曲详情 |
+| `/api/song/cover?mid=xxx&password=你的密码` | 获取歌曲封面 |
+| `/api/lyric?mid=xxx&qrc=1&trans=1&password=你的密码` | 获取歌词 (支持参数: qrc(逐字), trans(翻译), roma(罗马音)) |
+| `/api/album?mid=xxx&password=你的密码` | 获取专辑详情 |
+| `/api/playlist?id=xxx&password=你的密码` | 获取歌单详情 |
+| `/api/singer?mid=xxx&password=你的密码` | 获取歌手信息 |
+| `/api/top?password=你的密码` | 获取排行榜 |
+| `/admin?password=你的密码` | 数据库初始化 |
 
 ### 音质参数说明
 
@@ -105,6 +115,7 @@ Fork 此仓库到你的 GitHub 账户。
 
 2. **本地运行**
    ```bash
+   export PASSWORD=你的密码
    npx wrangler dev
    ```
 

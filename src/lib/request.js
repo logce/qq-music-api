@@ -190,3 +190,22 @@ export function errorResponse(message, status = 500) {
 export function handleOptions() {
     return new Response(null, { headers: corsHeaders });
 }
+
+/**
+ * 校验访问密码
+ * @param {Request} request 请求对象
+ * @param {object} env 环境变量
+ * @returns {boolean}
+ */
+export function verifyPassword(request, env) {
+    const expectedPassword = env?.PASSWORD || env?.password;
+
+    if (!expectedPassword) {
+        return true;
+    }
+
+    const url = new URL(request.url);
+    const password = url.searchParams.get("password");
+
+    return password === expectedPassword;
+}

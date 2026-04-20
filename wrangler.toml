@@ -18,3 +18,7 @@ crons = ["0 3 * * *"]
 [observability.logs]
 enabled = true
 invocation_logs = true
+
+[vars]
+# 本地开发可直接填写，线上建议在 Cloudflare Secrets 中设置 password
+password = ""

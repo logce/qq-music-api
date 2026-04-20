@@ -16,6 +16,7 @@ import * as playlist from "./api/playlist.js";
 import * as singer from "./api/singer.js";
 import * as top from "./api/top.js";
 import * as admin from "./admin.js";
+import { verifyPassword, errorResponse } from "./lib/request.js";
 import { ensureStatsTable, incrementCount, getTotalCount } from "./lib/stats.js";
 
 const corsHeaders = {
@@ -73,6 +74,7 @@ function generateIndexHtml(totalCount) {
         h1{font-size:2rem;color:#fff;margin-bottom:8px}
         .s{color:#666;margin-bottom:40px}
         .s .count{color:#31c27c;font-weight:600}
+        .n{margin:-20px 0 24px;padding:12px 14px;background:#222;border:1px solid #333;border-radius:8px;color:#bbb;font-size:.9rem}
         h2{font-size:1.1rem;color:#31c27c;margin:30px 0 15px;border-bottom:1px solid #333;padding-bottom:8px}
         .e{background:#222;border-radius:8px;padding:16px;margin-bottom:16px}
         .h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -93,21 +95,22 @@ function generateIndexHtml(totalCount) {
 <div class="c">
     <h1>QQ Music API</h1>
     <p class="s">基于 Cloudflare Workers + D1 的 QQ 音乐 API 服务 · 累计调用 <span class="count">${totalCount.toLocaleString()}</span> 次</p>
+    <div class="n">设置 <code>password</code> 环境变量后，除首页外的请求都需要在 query 中携带 <code>password</code> 参数。</div>
     
     <h2>搜索</h2>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/search</span></div><p class="d">搜索歌曲、歌手、专辑或歌单</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">keyword</span><span class="r">*</span></td><td>string</td><td>搜索关键词</td></tr><tr><td><span class="pm">type</span></td><td>string</td><td>song/singer/album/playlist</td></tr><tr><td><span class="pm">num</span></td><td>int</td><td>返回数量</td></tr><tr><td><span class="pm">page</span></td><td>int</td><td>页码</td></tr></table><div class="ex">GET /api/search?keyword=周杰伦&type=song&num=20</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/search</span></div><p class="d">搜索歌曲、歌手、专辑或歌单</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">keyword</span><span class="r">*</span></td><td>string</td><td>搜索关键词</td></tr><tr><td><span class="pm">type</span></td><td>string</td><td>song/singer/album/playlist</td></tr><tr><td><span class="pm">num</span></td><td>int</td><td>返回数量</td></tr><tr><td><span class="pm">page</span></td><td>int</td><td>页码</td></tr></table><div class="ex">GET /api/search?keyword=周杰伦&type=song&num=20&password=你的密码</div></div>
     <h2>歌曲</h2>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/song/url</span></div><p class="d">获取歌曲播放链接</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span><span class="r">*</span></td><td>string</td><td>歌曲MID，多个用逗号分隔</td></tr><tr><td><span class="pm">quality</span></td><td>string</td><td>master/atmos/atmos_51/flac/320/128</td></tr></table><div class="ex">GET /api/song/url?mid=0039MnYb0qxYhV&quality=320</div></div>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/song/detail</span></div><p class="d">获取歌曲详情</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span></td><td>string</td><td>歌曲MID</td></tr><tr><td><span class="pm">id</span></td><td>int</td><td>歌曲ID</td></tr></table><div class="ex">GET /api/song/detail?mid=0039MnYb0qxYhV</div></div>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/song/cover</span></div><p class="d">获取歌曲封面（支持 mid 自动处理、album_mid 回退）</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span></td><td>string</td><td>歌曲MID（自动获取详情）</td></tr><tr><td><span class="pm">album_mid</span></td><td>string</td><td>专辑MID</td></tr><tr><td><span class="pm">size</span></td><td>int</td><td>150/300/500/800</td></tr><tr><td><span class="pm">validate</span></td><td>bool</td><td>是否验证(默认true)</td></tr></table><div class="ex">GET /api/song/cover?mid=0039MnYb0qxYhV&size=300</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/song/url</span></div><p class="d">获取歌曲播放链接</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span><span class="r">*</span></td><td>string</td><td>歌曲MID，多个用逗号分隔</td></tr><tr><td><span class="pm">quality</span></td><td>string</td><td>master/atmos/atmos_51/flac/320/128</td></tr></table><div class="ex">GET /api/song/url?mid=0039MnYb0qxYhV&quality=320&password=你的密码</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/song/detail</span></div><p class="d">获取歌曲详情</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span></td><td>string</td><td>歌曲MID</td></tr><tr><td><span class="pm">id</span></td><td>int</td><td>歌曲ID</td></tr></table><div class="ex">GET /api/song/detail?mid=0039MnYb0qxYhV&password=你的密码</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/song/cover</span></div><p class="d">获取歌曲封面（支持 mid 自动处理、album_mid 回退）</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span></td><td>string</td><td>歌曲MID（自动获取详情）</td></tr><tr><td><span class="pm">album_mid</span></td><td>string</td><td>专辑MID</td></tr><tr><td><span class="pm">size</span></td><td>int</td><td>150/300/500/800</td></tr><tr><td><span class="pm">validate</span></td><td>bool</td><td>是否验证(默认true)</td></tr></table><div class="ex">GET /api/song/cover?mid=0039MnYb0qxYhV&size=300&password=你的密码</div></div>
     <h2>歌词</h2>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/lyric</span></div><p class="d">获取歌词 (支持 LRC/QRC/罗马音/翻译 解密)</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span></td><td>string</td><td>歌曲MID</td></tr><tr><td><span class="pm">id</span></td><td>int</td><td>歌曲ID</td></tr><tr><td><span class="pm">qrc</span></td><td>bool</td><td>是否获取逐字歌词 (开启后 lyric 字段返回 QRC XML)</td></tr><tr><td><span class="pm">trans</span></td><td>bool</td><td>是否获取翻译歌词 (trans 字段)</td></tr><tr><td><span class="pm">roma</span></td><td>bool</td><td>是否获取罗马音歌词 (roma 字段, XML 格式)</td></tr></table><div class="ex">GET /api/lyric?mid=0039MnYb0qxYhV&qrc=1&trans=1&roma=1</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/lyric</span></div><p class="d">获取歌词 (支持 LRC/QRC/罗马音/翻译 解密)</p><table><tr><th>参数</th><th>类型</th><th>说明</th></tr><tr><td><span class="pm">mid</span></td><td>string</td><td>歌曲MID</td></tr><tr><td><span class="pm">id</span></td><td>int</td><td>歌曲ID</td></tr><tr><td><span class="pm">qrc</span></td><td>bool</td><td>是否获取逐字歌词 (开启后 lyric 字段返回 QRC XML)</td></tr><tr><td><span class="pm">trans</span></td><td>bool</td><td>是否获取翻译歌词 (trans 字段)</td></tr><tr><td><span class="pm">roma</span></td><td>bool</td><td>是否获取罗马音歌词 (roma 字段, XML 格式)</td></tr></table><div class="ex">GET /api/lyric?mid=0039MnYb0qxYhV&qrc=1&trans=1&roma=1&password=你的密码</div></div>
     <h2>专辑/歌单/歌手</h2>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/album</span></div><p class="d">获取专辑详情</p><div class="ex">GET /api/album?mid=002fRO0N4FftzY</div></div>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/playlist</span></div><p class="d">获取歌单详情</p><div class="ex">GET /api/playlist?id=8052190267</div></div>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/singer</span></div><p class="d">获取歌手信息</p><div class="ex">GET /api/singer?mid=0025NhlN2yWrP4</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/album</span></div><p class="d">获取专辑详情</p><div class="ex">GET /api/album?mid=002fRO0N4FftzY&password=你的密码</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/playlist</span></div><p class="d">获取歌单详情</p><div class="ex">GET /api/playlist?id=8052190267&password=你的密码</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/singer</span></div><p class="d">获取歌手信息</p><div class="ex">GET /api/singer?mid=0025NhlN2yWrP4&password=你的密码</div></div>
     <h2>排行榜</h2>
-    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/top</span></div><p class="d">获取排行榜列表或详情</p><div class="ex">GET /api/top</div><div class="ex">GET /api/top?id=4&num=50</div></div>
+    <div class="e"><div class="h"><span class="m">GET</span><span class="p">/api/top</span></div><p class="d">获取排行榜列表或详情</p><div class="ex">GET /api/top?password=你的密码</div><div class="ex">GET /api/top?id=4&num=50&password=你的密码</div></div>
     <footer><a href="https://doc.ygking.top">文档</a> · <a href="https://github.com/tooplick/qq-music-api">GitHub</a></footer>
 </div>
 </body>
@@ -153,6 +156,10 @@ export default {
                     ...corsHeaders,
                 },
             });
+        }
+
+        if (!verifyPassword(request, env)) {
+            return errorResponse("未授权：password 错误或缺失", 401);
         }
 
         // API 路由
