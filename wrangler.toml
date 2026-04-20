@@ -12,15 +12,9 @@ database_id = "1dfc3373-ec1d-4fbe-9113-104a4d0d1784"
 [triggers]
 crons = ["0 3 * * *"]
 
+
 # 开启日志
 [observability]
 [observability.logs]
 enabled = true
 invocation_logs = true
-
-# 开发环境配置
-[env.development]
-vars = { API_SECRET = "dev-key-local-test" }
-
-# 生产环境配置（API_SECRET 通过 wrangler secret put 设置）
-[env.production]
